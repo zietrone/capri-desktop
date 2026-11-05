@@ -869,6 +869,7 @@ namespace CapriDesktop
                 if (Program.Smoke == null) CheckSleep(now);
             }
             Advance(now);
+            TickEars();
             Talk.Update(now);
             if (smoke != null) smoke.Tick(now);
         }
@@ -1583,10 +1584,6 @@ namespace CapriDesktop
             React();
         }
 
-        internal void NoVoice()
-        {
-            Talk.Answer("(voice)", "Voice chat isn't on Mac and Linux yet. Type to me for now, choom.");
-        }
 
         internal void Grab()
         {
@@ -1944,6 +1941,7 @@ namespace CapriDesktop
             menu.Items.Add(hideItem);
             menu.Items.Add(sizes);
             menu.Items.Add(move);
+            menu.Items.Add(VoiceChatItem());
             menu.Items.Add(help);
             menu.Items.Add(update);
             menu.Items.Add(new Separator());
@@ -4660,6 +4658,7 @@ namespace CapriDesktop
             try
             {
                 if (husk != null) husk.Dispose();
+                StopEars(false);
                 StopAwake();
                 CloseMainframe();
                 Brain.Cancel();
@@ -4681,6 +4680,7 @@ namespace CapriDesktop
         internal void Finish(int code)
         {
             if (husk != null) husk.Dispose();
+            StopEars(false);
             StopAwake();
             CloseMainframe();
             frames.Stop();

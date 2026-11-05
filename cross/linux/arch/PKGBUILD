@@ -1,0 +1,48 @@
+# Capri for Arch Linux, built from the checkout this PKGBUILD sits in.
+#   cd cross/linux/arch && makepkg -si
+pkgname=capri-desktop
+pkgver=0.8.3
+pkgrel=1
+pkgdesc="Unofficial Capri desktop companion, with voice chat through your mic"
+arch=('x86_64' 'aarch64')
+url="https://github.com/lachydotmcg/capri-desktop"
+license=('custom')
+depends=('fontconfig' 'libx11' 'libxcursor' 'libxrandr' 'libxi' 'libice' 'libsm' 'icu' 'openssl' 'zlib')
+makedepends=('dotnet-sdk>=10.0')
+optdepends=(
+  'pipewire: her mic, through pw-record (recommended)'
+  'libpulse: her mic through parecord, without PipeWire'
+  'alsa-utils: her mic through arecord, without PipeWire or PulseAudio'
+  'whisper-cpp: offline voice chat (her own ears)'
+  'ollama: a local brain'
+  'xdotool: her hands on X11'
+  'ydotool: her hands on Wayland'
+)
+options=('!strip' '!debug')
+source=()
+sha256sums=()
+
+_root() { readlink -f "$startdir/../../.."; }
+
+build() {
+  local rid=linux-x64
+  [[ $CARCH == aarch64 ]] && rid=linux-arm64
+  export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
+  dotnet publish "$(_root)/cross/Capri.Cross.csproj" -c Release -r "$rid" --self-contained \
+    -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none \
+    -o "$srcdir/out"
+}
+
+package() {
+  local root; root="$(_root)"
+  install -d "$pkgdir/opt/$pkgname"
+  cp -a "$srcdir/out/." "$pkgdir/opt/$pkgname/"
+  chmod 755 "$pkgdir/opt/$pkgname/Capri"
+  install -d "$pkgdir/usr/bin"
+  ln -s "/opt/$pkgname/Capri" "$pkgdir/usr/bin/capri-desktop"
+  sed 's/^Exec=.*/Exec=capri-desktop/' "$root/cross/linux/capri-desktop.desktop" \
+    | install -Dm644 /dev/stdin "$pkgdir/usr/share/applications/capri-desktop.desktop"
+  install -Dm644 "$root/cross/icon.png" "$pkgdir/usr/share/icons/hicolor/256x256/apps/capri-desktop.png"
+  install -Dm644 "$root/LICENSE.md" "$pkgdir/usr/share/licenses/$pkgname/LICENSE.md"
+  install -Dm644 "$root/THIRD-PARTY-NOTICES.md" "$pkgdir/usr/share/licenses/$pkgname/THIRD-PARTY-NOTICES.md"
+}

@@ -878,6 +878,7 @@ namespace CapriDesktop
                 for (int hologramTool = 0; hologramTool < Hands.Count; hologramTool++) if (Hands.Name(hologramTool) == "hologram") throw new Exception("Hologram tool was exposed on Mac or Linux.");
                 if (Hands.Do("hologram", new ToolArguments { Action = "on" }) != Hands.NoHologram || Hands.Do("hologram", new ToolArguments { Action = "off" }) != Hands.NoHologram || Hands.Pulled(Hands.NoHologram) != Hands.NoHologram) throw new Exception("Hologram tool failed its Windows-only guard.");
                 checks.Add("PASS hologram on and off explain Windows-only immediately with or without a brain, and the tool stays Windows-only");
+                VoiceChatChecks();
                 MiniChecks();
                 pet.Think = delegate(string words) { return words == "hey" ? "Just vibing, choom." : "wrong words"; };
                 pet.Talk.Pill.Press(1);
@@ -1735,6 +1736,37 @@ namespace CapriDesktop
                 Hands.Forget();
             }
             checks.Add("PASS Minecraft opens an installed launcher, keeps a real Minecraft app first, finds Java game windows and plays an open game without launching music or another app");
+        }
+
+        // Voice chat without a mic: phrases split from quiet, Whisper's ghosts dropped, the request whisper.cpp reads, her pill's
+        // mic button, and the recorder's arguments.
+        private void VoiceChatChecks()
+        {
+            Endpointer cut = new Endpointer();
+            Random noise = new Random(7);
+            int found = 0, length = 0;
+            for (int c = 0; c < 40; c++)
+            {
+                short[] chunk = new short[LinuxMic.Chunk];
+                bool loud = c >= 10 && c < 25;
+                for (int i = 0; i < chunk.Length; i++) chunk[i] = (short)(noise.Next(-60, 60) + (loud ? 6000 * Math.Sin(2 * Math.PI * 220 * (c * chunk.Length + i) / LinuxMic.Rate) : 0));
+                short[] phrase = cut.Feed(chunk);
+                if (phrase != null) { found++; length = phrase.Length; }
+            }
+            if (found != 1 || length < LinuxMic.Rate * 3 / 2 || length > LinuxMic.Rate * 3) throw new Exception("Voice chat split a phrase wrong: " + found + " phrases, " + length + " samples.");
+            short[] click = new short[LinuxMic.Chunk];
+            for (int i = 0; i < click.Length; i++) click[i] = 8000;
+            Endpointer once = new Endpointer();
+            if (once.Feed(click) != null) throw new Exception("Voice chat heard a click as a phrase.");
+            for (int c = 0; c < 12; c++) if (once.Feed(new short[LinuxMic.Chunk]) != null) throw new Exception("Voice chat heard a click as a phrase.");
+            if (Transcriber.Clean(" [BLANK_AUDIO] ") != "" || Transcriber.Clean("Thank you.") != "" || Transcriber.Clean("(music) Open Spotify.") != "Open Spotify.") throw new Exception("Voice chat kept Whisper's ghosts.");
+            if (Transcriber.Parse(System.Text.Encoding.UTF8.GetBytes("{\"text\":\" hi there\"}")) != " hi there") throw new Exception("Voice chat misread a transcript.");
+            byte[] wav = Transcriber.Wav(new short[LinuxMic.Rate], LinuxMic.Rate);
+            if (wav.Length != 44 + LinuxMic.Rate * 2 || System.Text.Encoding.ASCII.GetString(wav, 0, 4) != "RIFF") throw new Exception("Voice chat's WAV is wrong.");
+            if (Pill.PartAt(Pill.Wide + 5, true) != 3 || Pill.PartAt(Pill.Wide + 5, false) != 2 || Pill.PartAt(10, true) != 1) throw new Exception("Her pill's mic button is in the wrong place.");
+            if (string.Join(" ", LinuxMic.Arguments("pw-record", null)) != "--raw --rate 16000 --channels 1 --format s16 -") throw new Exception("pw-record would add a header to her mic.");
+            if (Pet.DefaultEarsModel("https://api.groq.com/openai/v1/audio/transcriptions") != "whisper-large-v3-turbo") throw new Exception("Voice chat picked the wrong Groq model.");
+            checks.Add("PASS voice chat: a phrase is cut from the quiet around it and a click isn't one, Whisper's ghosts are dropped, the WAV and transcript are right, her pill has its mic button, and pw-record gives plain samples");
         }
 
         private void MiniChecks()

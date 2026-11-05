@@ -712,6 +712,7 @@ namespace CapriDesktop
         internal const double Tall = 40;
         internal event Action Typing;
         internal event Action Voice;
+        internal event Action Mute;
         private static readonly Random random = new Random();
         private readonly PillFace face = new PillFace();
         private double shown = -1;
@@ -740,7 +741,18 @@ namespace CapriDesktop
             return x < Wide / 2 ? 1 : 2;
         }
 
-        private int Part(double x) { return PartAt(x, false); }
+        private int Part(double x) { return PartAt(x, face.Chatting); }
+
+        // Voice chat widens her pill with the mic button and lights its wave with the mic's level.
+        internal void Chat(bool chatting, bool muted, int level)
+        {
+            if (face.Chatting == chatting && face.Muted == muted && face.Level == level) return;
+            if (face.Chatting != chatting) Width = PillFace.Across(1, chatting);
+            face.Chatting = chatting;
+            face.Muted = muted;
+            face.Level = level;
+            face.InvalidateVisual();
+        }
 
         private void Hover(int part)
         {
@@ -789,6 +801,7 @@ namespace CapriDesktop
         internal void Press(int part)
         {
             if (part == 1) { if (Typing != null) Typing(); }
+            else if (part == 3) { if (Mute != null) Mute(); }
             else if (Voice != null) Voice();
         }
     }
@@ -828,7 +841,8 @@ namespace CapriDesktop
                 keyTo(text);
             };
             Pill.Typing += delegate { if (Typer.IsVisible) Typer.Hide(); else Open(); };
-            Pill.Voice += delegate { pet.NoVoice(); };
+            Pill.Voice += delegate { pet.ToggleVoice(); };
+            Pill.Mute += delegate { pet.ToggleMicMute(); };
             Bubble.Dismissed += delegate { if (leaving < 0) leaving = pet.Now; };
         }
 
@@ -966,7 +980,8 @@ namespace CapriDesktop
         private void UpdatePill(double now)
         {
             bool allowed = !pet.Busy;
-            if (allowed && (pet.Hovered || (Pill.IsVisible && Pill.Over) || Typer.IsVisible || reply != null || thinking)) pillUntil = Math.Max(pillUntil, now + 1.5);
+            Pill.Chat(pet.VoiceChatting, pet.MicMuted, pet.MicLevel);
+            if (allowed && (pet.VoiceChatting || pet.Hovered || (Pill.IsVisible && Pill.Over) || Typer.IsVisible || reply != null || thinking)) pillUntil = Math.Max(pillUntil, now + 1.5);
             if (!allowed || now > pillUntil) { if (Pill.IsVisible) Pill.Hide(); return; }
             double scale = pet.DesktopScaling;
             PixelPoint feet = pet.FeetPoint;

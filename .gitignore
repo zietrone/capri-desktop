@@ -2,3 +2,6 @@ out/
 cross/bin/
 cross/obj/
 node_modules/
+cross/linux/arch/src/
+cross/linux/arch/pkg/
+cross/linux/arch/*.pkg.tar.*

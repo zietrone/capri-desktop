@@ -217,7 +217,7 @@ Stuck? The [setup guide](https://capriai.app/setup/) walks through it, or ask in
 
 0.8.3 gives Mac and Linux her full **Capri Mainframe**, laid out like Windows: BRAIN, VOICE and CAPRI up front, plus Simple and Advanced Settings. She sits on your windows and chats, remembers your chats, watches your screen, opens, switches and closes apps and controls your music. She checks in on you, takes head pats, keeps your PC awake for jobs and keeps her notes in Obsidian. She talks through your own speech server or a cloud voice, and Mods and Code/Husk Mode work too.
 
-Voice chat, calls and code mods are Windows only for now.
+Calls and code mods are Windows only for now. Voice chat works on Linux: see [Arch Linux and voice chat](#arch-linux-and-voice-chat).
 
 1. Download [Mac (Apple Silicon)](https://github.com/lachydotmcg/capri-desktop/releases/latest/download/Capri-mac-apple-silicon.zip), [Mac (Intel)](https://github.com/lachydotmcg/capri-desktop/releases/latest/download/Capri-mac-intel.zip), [Linux (AppImage)](https://github.com/lachydotmcg/capri-desktop/releases/latest/download/Capri-linux-x64.AppImage) or [Linux (tar.gz)](https://github.com/lachydotmcg/capri-desktop/releases/latest/download/Capri-linux-x64.tar.gz)
 2. For her brain, open **Capri Mainframe > BRAIN**: use a free NVIDIA, Gemini or OpenRouter key, your own OpenAI, Claude or DeepSeek key, or any OpenAI-compatible provider with a key. Or install [Ollama](https://ollama.com) and run `ollama pull gemma4:e4b`
@@ -227,6 +227,22 @@ Voice chat, calls and code mods are Windows only for now.
    ```
    Apple hasn't approved (notarized) her yet, so macOS blocks her or calls her "damaged" until you do. That line only clears the downloaded-from-the-internet flag on Capri
 4. **Linux:** make the AppImage executable and run it (`chmod +x Capri-linux-x64.AppImage`), or unpack the tarball and run `Capri/Capri`. She sits on windows on X11; on Wayland she sits on the bottom of your screen
+
+### Arch Linux and voice chat
+
+Build and install her as a package from this checkout:
+
+```bash
+sudo pacman -S --needed dotnet-sdk pipewire whisper-cpp
+cd cross/linux/arch && makepkg -si
+capri-desktop
+```
+
+Press **TALK** on her pill (or **Voice > Voice chat** in her menu) and just talk. She listens through PipeWire's `pw-record`, or falls back to `parecord` or `arecord`. When you stop talking she turns what you said into text and answers as if you'd typed it. She doesn't listen while she's thinking or talking, so she never hears herself. The mic button on the right of her pill mutes her ears.
+
+- **Offline ears:** with `whisper-cpp` installed she runs `whisper-server` herself and downloads Whisper base (about 150 MB) to her data folder the first time
+- **Cloud or your own server:** **Voice > Voice chat ears > Transcription server...** takes any OpenAI-style `/audio/transcriptions` address, such as Groq's free `https://api.groq.com/openai/v1/audio/transcriptions`, OpenAI, speaches or LocalAI
+- **Pick a mic** and how sensitive she is under **Voice > Voice chat ears**
 
 ## How to use her
 
