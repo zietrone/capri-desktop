@@ -2025,9 +2025,9 @@ namespace CapriDesktop
                 }
                 if (frame == null || frame.SystemDecorations != SystemDecorations.None || frame.Zoom != (Pet.FrameSize(before.MainframeSize) == 0 ? 1 : Pet.FrameSize(before.MainframeSize) / 100.0)) throw new Exception("Her Mainframe did not open with the saved scale.");
                 frame.Close();
-                if (pet.Frame != frame || frame.WindowState != WindowState.Minimized || pet.IsVisible != visible || pet.Leaving != leaving) throw new Exception("Closing her Mainframe stopped her or lost its taskbar window.");
+                if (pet.Frame != frame || (Look.NoMinimize ? frame.IsVisible : frame.WindowState != WindowState.Minimized) || pet.IsVisible != visible || pet.Leaving != leaving) throw new Exception("Closing her Mainframe stopped her or lost its taskbar window.");
                 string opened = Hands.Do("mainframe", new ToolArguments { Name = "settings" });
-                if (opened != "Opened Capri Mainframe." || pet.Frame != frame || !frame.SettingsShown || frame.WindowState != WindowState.Normal || !Hands.KitFor().Tools.Contains("\"name\":\"mainframe\"")) throw new Exception("Her Mainframe tool did not restore the window and open Settings: " + opened);
+                if (opened != "Opened Capri Mainframe." || pet.Frame != frame || !frame.SettingsShown || !frame.IsVisible || frame.WindowState != WindowState.Normal || !Hands.KitFor().Tools.Contains("\"name\":\"mainframe\"")) throw new Exception("Her Mainframe tool did not restore the window and open Settings: " + opened);
                 frame.Close(); pet.Hear("Open your Mainframe");
                 if (frame.WindowState != WindowState.Normal || frame.SettingsShown) throw new Exception("Asking for her Mainframe did not open the main page.");
                 pet.SetAdvancedSettings(false); Hands.Do("mainframe", new ToolArguments { Name = "moves" });

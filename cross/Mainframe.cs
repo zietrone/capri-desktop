@@ -177,7 +177,7 @@ namespace CapriDesktop
             pet = owner;
             Caption("MAINFRAME", 24, 15, 120, 29, MainframeTheme.Rose, 64.0 / 3, true, true);
             build = Caption("v" + typeof(Pet).Assembly.GetName().Version.ToString(3), 230, 20, 62, 22, MainframeTheme.Faint, 34.0 / 3); build.Align = TextAlignment.Right;
-            minimize = Key("", 300, 20, 26, 22, () => WindowState = WindowState.Minimized); minimize.Glyph = 1;
+            minimize = Key("", 300, 20, 26, 22, () => Look.Minimize(this)); minimize.Glyph = 1;
             close = Key("", 330, 20, 26, 22, Close); close.Glyph = 2;
             AutomationProperties.SetName(minimize, "Minimize"); AutomationProperties.SetName(close, "Close");
             MainframeTips.Explain(minimize, "Minimize"); MainframeTips.Explain(close, "Close");
@@ -358,7 +358,7 @@ namespace CapriDesktop
             heartbeat.Tick += (_, _) => Program.Guard(Heartbeat);
             Opened += (_, _) => { Sync(); status.Start(); heartbeat.Start(); };
             Closed += (_, _) => { closed = true; status.Stop(); heartbeat.Stop(); pet.SettingsChanged -= Sync; foreach (Window sheet in sheets.ToArray()) sheet.Close(); CloseMenus(); };
-            Closing += (_, e) => { if (!finishing) { e.Cancel = true; CloseMenus(); foreach (Window sheet in sheets.ToArray()) sheet.Close(); WindowState = WindowState.Minimized; } };
+            Closing += (_, e) => { if (!finishing) { e.Cancel = true; CloseMenus(); foreach (Window sheet in sheets.ToArray()) sheet.Close(); Look.Minimize(this); } };
             Sync();
         }
 
@@ -382,7 +382,7 @@ namespace CapriDesktop
         private void Heartbeat()
         {
             double swell = 1, beat = 0;
-            if (WindowState != WindowState.Minimized && support.IsVisible) Pulse(beatClock.Elapsed.TotalMilliseconds, out swell, out beat);
+            if (IsVisible && WindowState != WindowState.Minimized && support.IsVisible) Pulse(beatClock.Elapsed.TotalMilliseconds, out swell, out beat);
             if (swell == support.Swell && beat == support.Beat) return;
             support.Swell = swell; support.Beat = beat; support.InvalidateVisual();
         }
@@ -651,7 +651,7 @@ namespace CapriDesktop
                 sheet.Closed += delegate { Mods = null; };
                 ShowSheet(sheet);
             }
-            else { Mods.WindowState = WindowState.Normal; Mods.Activate(); }
+            else { Mods.Show(); Mods.WindowState = WindowState.Normal; Mods.Activate(); }
         }
     }
 }

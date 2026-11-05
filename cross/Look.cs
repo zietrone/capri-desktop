@@ -303,6 +303,20 @@ namespace CapriDesktop
         [System.Runtime.InteropServices.DllImport("libX11.so.6")] private static extern IntPtr XInternAtom(IntPtr display, string name, bool onlyIfExists);
         [System.Runtime.InteropServices.DllImport("libX11.so.6")] private static extern int XChangeProperty(IntPtr display, IntPtr window, IntPtr property, IntPtr type, int format, int mode, IntPtr[] data, int count);
 
+        // Tiling Wayland compositors (Hyprland, sway, niri) have no minimize: asking for it does nothing, so a window that
+        // would minimize hides instead, and opening it again shows it.
+        internal static readonly bool NoMinimize = OperatingSystem.IsLinux() && (
+            !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HYPRLAND_INSTANCE_SIGNATURE"))
+            || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SWAYSOCK"))
+            || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NIRI_SOCKET"))
+            || System.Text.RegularExpressions.Regex.IsMatch(Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP") ?? "", "Hyprland|sway|niri|river|dwl", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
+
+        internal static void Minimize(Window window)
+        {
+            if (NoMinimize) window.Hide();
+            else window.WindowState = WindowState.Minimized;
+        }
+
         internal static void Overlay(Window window, string title)
         {
             AboveGames(window);
