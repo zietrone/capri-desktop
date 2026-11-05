@@ -315,6 +315,14 @@ namespace CapriDesktop
             window.CanResize = false;
             window.ShowActivated = false;
             window.WindowStartupLocation = WindowStartupLocation.Manual;
+            // A window manager's close (Hyprland's killactive, a taskbar) only hides it: a closed window can't be shown again,
+            // and her pill and bubble come back every time she talks. Her own quit still closes it.
+            window.Closing += delegate(object sender, WindowClosingEventArgs e)
+            {
+                if (e.IsProgrammatic || e.CloseReason != WindowCloseReason.WindowClosing) return;
+                e.Cancel = true;
+                window.Hide();
+            };
         }
 
         // Linux forgets a window is on top once it hides, and setting Topmost to true again does nothing when it already is,
