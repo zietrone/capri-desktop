@@ -1,0 +1,10 @@
+[Unit]
+Description=Capri local voice (Kokoro on localhost:8880)
+
+[Service]
+WorkingDirectory=%h/.local/share/capri-voice
+ExecStart=%h/.local/share/capri-voice/venv/bin/python server.py
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

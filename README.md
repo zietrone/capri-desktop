@@ -244,6 +244,8 @@ Press **TALK** on her pill (or **Voice > Voice chat** in her menu) and just talk
 - **Cloud or your own server:** **Voice > Voice chat ears > Transcription server...** takes any OpenAI-style `/audio/transcriptions` address, such as Groq's free `https://api.groq.com/openai/v1/audio/transcriptions`, OpenAI, speaches or LocalAI
 - **Pick a mic** and how sensitive she is under **Voice > Voice chat ears**
 
+More on the Arch package, her local Kokoro voice and Hyprland: [cross/linux/arch/README.md](cross/linux/arch/README.md).
+
 ## How to use her
 
 - **Pencil:** type to her
